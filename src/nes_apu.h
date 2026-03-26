@@ -1,0 +1,216 @@
+#ifndef _NES_APU_H_
+#define _NES_APU_H_
+ 
+#define REALTIME_NOISE
+
+#define APU_WRA0 0x4000
+#define APU_WRA1 0x4001
+#define APU_WRA2 0x4002
+#define APU_WRA3 0x4003
+#define APU_WRB0 0x4004
+#define APU_WRB1 0x4005
+#define APU_WRB2 0x4006
+#define APU_WRB3 0x4007
+#define APU_WRC0 0x4008
+#define APU_WRC2 0x400A
+#define APU_WRC3 0x400B
+#define APU_WRD0 0x400C
+#define APU_WRD2 0x400E
+#define APU_WRD3 0x400F
+#define APU_WRE0 0x4010
+#define APU_WRE1 0x4011
+#define APU_WRE2 0x4012
+#define APU_WRE3 0x4013
+
+#define APU_SMASK 0x4015
+ 
+#define APU_NOISE_32K 0x7FFF
+#define APU_NOISE_93 93
+
+#define APU_BASEFREQ 1789772.7272727272727272
+ 
+typedef struct rectangle_s
+{
+   uint8 regs[4];
+
+   bool enabled;
+
+   float accum;
+   int32 freq;
+   int32 output_vol;
+   bool fixed_envelope;
+   bool holdnote;
+   uint8 volume;
+
+   int32 sweep_phase;
+   int32 sweep_delay;
+   bool sweep_on;
+   uint8 sweep_shifts;
+   uint8 sweep_length;
+   bool sweep_inc;
+ 
+   int32 freq_limit;
+   int32 env_phase;
+   int32 env_delay;
+   uint8 env_vol;
+
+   int vbl_length;
+   uint8 adder;
+   int duty_flip;
+} rectangle_t;
+
+typedef struct triangle_s
+{
+   uint8 regs[3];
+
+   bool enabled;
+
+   float accum;
+   int32 freq;
+   int32 output_vol;
+
+   uint8 adder;
+
+   bool holdnote;
+   bool counter_started;
+ 
+   int write_latency;
+
+   int vbl_length;
+   int linear_length;
+} triangle_t;
+
+typedef struct noise_s
+{
+   uint8 regs[3];
+
+   bool enabled;
+
+   float accum;
+   int32 freq;
+   int32 output_vol;
+
+   int32 env_phase;
+   int32 env_delay;
+   uint8 env_vol;
+   bool fixed_envelope;
+   bool holdnote;
+
+   uint8 volume;
+
+   int vbl_length;
+
+#ifdef REALTIME_NOISE
+   uint8 xor_tap;
+#else
+   bool short_sample;
+   int cur_pos;
+#endif  
+} noise_t;
+
+typedef struct dmc_s
+{
+   uint8 regs[4];
+ 
+   bool enabled;
+
+   float accum;
+   int32 freq;
+   int32 output_vol;
+
+   uint32 address;
+   uint32 cached_addr;
+   int dma_length;
+   int cached_dmalength;
+   uint8 cur_byte;
+
+   bool looping;
+   bool irq_gen;
+   bool irq_occurred;
+
+} dmc_t;
+
+enum
+{
+   APU_FILTER_NONE,
+   APU_FILTER_LOWPASS,
+   APU_FILTER_WEIGHTED
+};
+
+typedef struct
+{
+   uint32 min_range, max_range;
+   uint8 (*read_func)(uint32 address);
+} apu_memread;
+
+typedef struct
+{
+   uint32 min_range, max_range;
+   void (*write_func)(uint32 address, uint8 value);
+} apu_memwrite;
+ 
+typedef struct apuext_s
+{
+   int (*init)(void);
+   void (*shutdown)(void);
+   void (*reset)(void);
+   int32 (*process)(void);
+   apu_memread *mem_read;
+   apu_memwrite *mem_write;
+} apuext_t;
+
+typedef struct apu_s
+{
+   rectangle_t rectangle[2];
+   triangle_t triangle;
+   noise_t noise;
+   dmc_t dmc;
+   uint8 enable_reg;
+
+   void *buffer;  
+   int num_samples;
+
+   uint8 mix_enable;
+   int filter_type;
+
+   double base_freq;
+   float cycle_rate;
+
+   int sample_rate;
+   int sample_bits;
+   int refresh_rate;
+
+   void (*process)(void *buffer, int num_samples);
+   void (*irq_callback)(void);
+   uint8 (*irqclear_callback)(void);
+ 
+   apuext_t *ext;
+} apu_t;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif  
+ 
+   extern void apu_setcontext(apu_t *src_apu);
+   extern void apu_getcontext(apu_t *dest_apu);
+
+   extern void apu_setparams(double base_freq, int sample_rate, int refresh_rate, int sample_bits);
+   extern apu_t *apu_create(double base_freq, int sample_rate, int refresh_rate, int sample_bits);
+   extern void apu_destroy(apu_t **apu);
+
+   extern void apu_process(void *buffer, int num_samples);
+   extern void apu_reset(void);
+
+   extern void apu_setext(apu_t *apu, apuext_t *ext);
+   extern void apu_setfilter(int filter_type);
+   extern void apu_setchan(int chan, bool enabled);
+
+   extern uint8 apu_read(uint32 address);
+   extern void apu_write(uint32 address, uint8 value);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

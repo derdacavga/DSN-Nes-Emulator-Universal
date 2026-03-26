@@ -1,0 +1,35 @@
+#######################################
+# Syntax Coloring Map For Dsn nes emulator
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+bitmap_t	KEYWORD1
+nes_t	KEYWORD1
+sndinfo_t	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+nofrendo_main	KEYWORD2
+vid_preload_rom	KEYWORD2
+nes_get_gamepad_state	KEYWORD2
+osd_init_sound	KEYWORD2
+osd_getsoundinfo	KEYWORD2
+osd_setsound	KEYWORD2
+osd_stopsound	KEYWORD2
+osd_writesound	KEYWORD2
+osd_initvideo	KEYWORD2
+osd_shutdownvideo	KEYWORD2
+osd_setscreen	KEYWORD2
+osd_setpalette	KEYWORD2
+osd_blit	KEYWORD2
+vid_flush	KEYWORD2
+osd_getromdata	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+APP_VERSION	LITERAL1
+APP_STRING	LITERAL1

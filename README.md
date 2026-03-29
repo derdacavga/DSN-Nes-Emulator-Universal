@@ -12,7 +12,7 @@ A high-performance, DIY handheld NES (Nintendo Entertainment System) emulator po
 
 Build your own following the step-by-step guide!https://youtu.be/wruJ-BESnX8
 
-[![Watch the tutorial](https://img.youtube.com/vi/ /0.jpg)](https://www.youtube.com/watch?v= )
+[![Watch the tutorial](https://img.youtube.com/vi/SfLk6zZxBrA/0.jpg)](https://www.youtube.com/watch?v=SfLk6zZxBrA )
 
 > **Click the image above to watch the full tutorial on YouTube.**
 

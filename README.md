@@ -64,15 +64,13 @@ Below is the connection diagram for the components.
 | DC | GPIO **[15]** | Data/Command |
 | CS | GPIO **[4]** | Chip Select |
 
-### 2. Micro SD Card Module (SPI)
+### 2. SD Card Module (SPI)
 | SD Module Pin | ESP32-S3 GPIO | Function |
 | :--- | :--- | :--- |
 | CS | GPIO **[41]** | Chip Select |
 | MOSI | GPIO **[2]** | Shared with Display |
 | CLK | GPIO **[42]** | Shared with Display |
 | MISO | GPIO **[1]** | SPI MISO |
-| VCC | 3.3V | Power |
-| GND | GND | Ground |
 
 ### 3. MAX98357A Audio (I2S)
 | Amp Pin | ESP32-S3 GPIO | Function |
@@ -109,7 +107,7 @@ Below is the connection diagram for the components.
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/derdacavga/Esp32-S3-nes-emulator-by-DSN.git](https://github.com/derdacavga/DSN-Nes-Emulator-Universal.git)
+    git clone [https://github.com/derdacavga/DSN-Nes-Emulator-Universal.git](https://github.com/derdacavga/DSN-Nes-Emulator-Universal.git)
     ```
 2.  **Open in IDE:**
     * Open the project using **Arduino IDE**.

@@ -18,7 +18,7 @@ Build your own following the step-by-step guide!https://youtu.be/wruJ-BESnX8
 
 ## 📺 Previous Version
 
-Build your own following the step-by-step guide!https://youtu.be/wruJ-BESnX8
+Build your own following the step-by-step guide!
 
 [![Watch the tutorial](https://img.youtube.com/vi/wruJ-BESnX8/0.jpg)](https://www.youtube.com/watch?v=wruJ-BESnX8)
 
@@ -44,7 +44,7 @@ To build this project, you will need the following components:
 * **Controls:** 8x Tactile Push Buttons (6x6mm)
 * **Power:** LiPo Battery & Charging Circuit (TP4056)
 * **Wires & Perfboard:** For connections.
-* **3D Printed Models:** For case.
+* **3D Printed Models:** For case. https://cults3d.com/en/3d-model/game/esp32-nes-handheld-game-console-printable-case
 
 ## 🔌 Wiring & Pinout
 

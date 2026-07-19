@@ -17,14 +17,11 @@ Build your own following the step-by-step guide!
 > **Click the image above to watch the full tutorial on YouTube.**
 
 ## 📺 Previous Version
-
-Build your own following the step-by-step guide!
+Source Code : https://github.com/derdacavga/DSN-Nes-Emulator-Universal
 
 [![Watch the tutorial](https://img.youtube.com/vi/wruJ-BESnX8/0.jpg)](https://www.youtube.com/watch?v=wruJ-BESnX8)
 
 ## 📺 New Version for Esp32
-
-Build your own following the step-by-step guide!https://youtu.be/wruJ-BESnX8
 
 [![Watch the tutorial](https://img.youtube.com/vi/O2TaipFjLDM/0.jpg)](https://www.youtube.com/watch?v=O2TaipFjLDM)
 

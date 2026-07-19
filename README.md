@@ -17,7 +17,7 @@ Build your own following the step-by-step guide!
 > **Click the image above to watch the full tutorial on YouTube.**
 
 ## 📺 Previous Version
-Source Code : https://github.com/derdacavga/DSN-Nes-Emulator-Universal
+Source Code : https://github.com/derdacavga/Esp32-S3-nes-emulator-by-DSN
 
 [![Watch the tutorial](https://img.youtube.com/vi/wruJ-BESnX8/0.jpg)](https://www.youtube.com/watch?v=wruJ-BESnX8)
 

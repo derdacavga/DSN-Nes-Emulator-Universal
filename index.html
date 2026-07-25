@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSN ESP32-S3 Web Flasher for NES Emulator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; color: #333; }
+        .container { max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:disabled { background: #6c757d; }
+        #log { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 4px; height: 200px; overflow-y: scroll; font-family: monospace; margin-top: 20px; white-space: pre-wrap; }
+    </style>
+    <script type="module">
+        import { ESPLoader, Transport } from 'https://unpkg.com/esptool-js@0.5.7/bundle.js';
+
+        let device = null;
+        let transport = null;
+        let esploader = null;
+
+        const logElement = document.getElementById('log');
+        const connectBtn = document.getElementById('connectBtn');
+        const flashBtn = document.getElementById('flashBtn');
+        const counterElement = document.getElementById('downloadCounter');
+
+        const repoOwner = 'derdacavga';
+        const repoName = 'DSN-Nes-Emulator-Universal';
+
+        // 1. Fetch download counter safely via GitHub API
+        async function updateDownloadCounter() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`);
+                if (!response.ok) throw new Error("Release not found");
+                
+                const releaseData = await response.json();
+                const firmwareAsset = releaseData.assets.find(a => a.name === 'firmware.bin');
+                
+                if (firmwareAsset) {
+                    counterElement.textContent = firmwareAsset.download_count;
+                } else {
+                    counterElement.textContent = "0";
+                }
+            } catch (error) {
+                console.error("Failed to fetch download counter:", error);
+                counterElement.textContent = "-";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', updateDownloadCounter);
+
+        function log(msg) {
+            logElement.textContent += msg + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        async function downloadBin(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+            
+            const buffer = await response.arrayBuffer();
+            const firmwareArray = new Uint8Array(buffer);
+            let binaryString = "";
+            
+            for (let i = 0; i < firmwareArray.length; i++) {
+                binaryString += String.fromCharCode(firmwareArray[i]);
+            }
+            return binaryString;
+        }
+
+        connectBtn.addEventListener('click', async () => {
+            try {
+                const port = await navigator.serial.requestPort();
+                transport = new Transport(port);
+                
+                log("Connecting to ESP32-S3...");
+                
+                esploader = new ESPLoader({
+                    transport: transport,
+                    baudrate: 115200,
+                    terminal: {
+                        clean: () => { logElement.textContent = ''; },
+                        writeLine: (msg) => log(msg),
+                        write: (msg) => log(msg)
+                    }
+                });
+                
+                const chipName = await esploader.main();
+                
+                log(`\n🎉 Connected Successfully to: ${chipName}`);
+                flashBtn.disabled = false;
+            } catch (err) {
+                log(`Error: ${err.message}`);
+                console.error(err);
+            }
+        });
+
+        flashBtn.addEventListener('click', async () => {
+            try {
+                flashBtn.disabled = true;
+                log("Fetching binaries from Github...");
+                                
+                const [bootloaderStr, partitionsStr, firmwareStr] = await Promise.all([
+                    downloadBin(`https://github.com/derdacavga/DSN-Nes-Emulator-Universal/releases/download/v1.0/bootloader.bin`),
+                    downloadBin(`https://github.com/derdacavga/DSN-Nes-Emulator-Universal/releases/download/v1.0/partition-table.bin`),
+                    downloadBin(`https://github.com/derdacavga/DSN-Nes-Emulator-Universal/releases/download/v1.0/firmware.bin`)
+                ]);
+
+                log("Flashing ESP32-S3 bootloader (0x0), partition table (0x8000), and firmware (0x10000)...");
+                
+                const fileArray = [
+                    { data: bootloaderData, address: 0x0000 },
+                    { data: partitionsData, address: 0x8000 },
+                    { data: firmwareData, address: 0x10000 }
+                ];
+                
+                await esploader.writeFlash({
+                    fileArray: fileArray,
+                    flashSize: 'keep',
+                    eraseAll: false,
+                    compress: true,
+                    reportProgress: (fileIndex, written, total) => {
+                        const percent = ((written / total) * 100).toFixed(1);
+                        let fileName = fileIndex === 0 ? "Bootloader" : fileIndex === 1 ? "Partition Table" : "Firmware";
+                        log(`Flashing ${fileName}: ${percent}%`);
+                    }
+                });
+
+                log("SUCCESS! All files flashed successfully.");
+                
+                log("Rebooting ESP32-S3 into app...");
+                await esploader.hardReset();
+                log("Done! You can now test your NES emulator.");
+
+                const currentCount = parseInt(counterElement.textContent) || 0;
+                counterElement.textContent = currentCount + 1;
+                
+            } catch (err) {
+                log(`Flashing failed: ${err.message}`);
+            } finally {
+                flashBtn.disabled = false;
+            }
+        });
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <h2>ESP32-S3 Web Flasher Tool</h2>
+    <p>Connect your ESP32-S3 board via USB, click connect, then flash the NES Emulator firmware.</p>
+
+    <div style="background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 5px; font-weight: bold; width: max-content; margin-bottom: 15px;">
+        🎮 Total Installations: <span id="downloadCounter">Loading...</span>
+    </div>
+    
+    <button id="connectBtn">1. Connect ESP32-S3</button>
+    <button id="flashBtn" disabled>2. Flash Firmware</button>
+
+    <h3>Console Output</h3>
+    <div id="log"></div>
+</div>
+
+</body>
+</html>

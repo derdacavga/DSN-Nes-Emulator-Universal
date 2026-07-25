@@ -12,7 +12,7 @@
         #log { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 4px; height: 200px; overflow-y: scroll; font-family: monospace; margin-top: 20px; white-space: pre-wrap; }
     </style>
     <script type="module">
-        import { ESPLoader, Transport } from 'https://unpkg.com/esptool-js@0.5.7/bundle.js';
+        import { ESPLoader, Transport } from 'https://unpkg.com/esptool-js@0.4.6/bundle.js';
 
         let device = null;
         let transport = null;
@@ -26,8 +26,7 @@
         const repoOwner = 'derdacavga';
         const repoName = 'DSN-Nes-Emulator-Universal';
 
-        // 1. Fetch download counter safely via GitHub API
-        async function updateDownloadCounter() {
+        window.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`);
                 if (!response.ok) throw new Error("Release not found");
@@ -44,9 +43,7 @@
                 console.error("Failed to fetch download counter:", error);
                 counterElement.textContent = "-";
             }
-        }
-
-        window.addEventListener('DOMContentLoaded', updateDownloadCounter);
+        });
 
         function log(msg) {
             logElement.textContent += msg + '\n';
@@ -97,26 +94,26 @@
         flashBtn.addEventListener('click', async () => {
             try {
                 flashBtn.disabled = true;
-                log("Fetching binaries from Github...");
-                                
+                log("Fetching binaries directly from repository...");
+                
                 const [bootloaderStr, partitionsStr, firmwareStr] = await Promise.all([
-                    downloadBin(`https://github.com/derdacavga/DSN-Nes-Emulator-Universal/releases/download/v1.0/bootloader.bin`),
-                    downloadBin(`https://github.com/derdacavga/DSN-Nes-Emulator-Universal/releases/download/v1.0/partition-table.bin`),
-                    downloadBin(`https://github.com/derdacavga/DSN-Nes-Emulator-Universal/releases/download/v1.0/firmware.bin`)
+                    downloadBin('./bootloader.bin'),
+                    downloadBin('./partition-table.bin'),
+                    downloadBin('./firmware.bin')
                 ]);
 
                 log("Flashing ESP32-S3 bootloader (0x0), partition table (0x8000), and firmware (0x10000)...");
                 
                 const fileArray = [
-                    { data: bootloaderData, address: 0x0000 },
-                    { data: partitionsData, address: 0x8000 },
-                    { data: firmwareData, address: 0x10000 }
+                    { data: bootloaderStr, address: 0x0000 },
+                    { data: partitionsStr, address: 0x8000 },
+                    { data: firmwareStr, address: 0x10000 }
                 ];
                 
-                await esploader.writeFlash({
+                await esploader.write_flash({
                     fileArray: fileArray,
-                    flashSize: 'keep',
-                    eraseAll: false,
+                    flash_size: 'keep',
+                    erase_all: false,
                     compress: true,
                     reportProgress: (fileIndex, written, total) => {
                         const percent = ((written / total) * 100).toFixed(1);
@@ -128,8 +125,17 @@
                 log("SUCCESS! All files flashed successfully.");
                 
                 log("Rebooting ESP32-S3 into app...");
-                await esploader.hardReset();
+                await transport.setDTR(false);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                await transport.setDTR(true);
                 log("Done! You can now test your NES emulator.");
+
+                try {
+                    const releaseUrl = `https://github.com/${repoOwner}/${repoName}/releases/latest/download/firmware.bin`;
+                    fetch(releaseUrl, { mode: 'no-cors' });  
+                } catch (e) {
+                    console.error("Counter ping failed", e);
+                }
 
                 const currentCount = parseInt(counterElement.textContent) || 0;
                 counterElement.textContent = currentCount + 1;

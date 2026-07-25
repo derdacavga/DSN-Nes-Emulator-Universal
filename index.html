@@ -94,15 +94,17 @@
         flashBtn.addEventListener('click', async () => {
             try {
                 flashBtn.disabled = true;
-                log("Fetching binaries directly from repository...");
+                log("Fetching binaries from repository...");
+                
+                const rawBaseUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main`;
                 
                 const [bootloaderStr, partitionsStr, firmwareStr] = await Promise.all([
-                    downloadBin('./bootloader.bin'),
-                    downloadBin('./partition-table.bin'),
-                    downloadBin('./firmware.bin')
+                    downloadBin(`${rawBaseUrl}/bootloader.bin`),
+                    downloadBin(`${rawBaseUrl}/partition-table.bin`),
+                    downloadBin(`${rawBaseUrl}/firmware.bin`)
                 ]);
 
-                log("Flashing ESP32-S3 bootloader (0x0), partition table (0x8000), and firmware (0x10000)...");
+                log("Flashing ESP32-S3 bootloader, partition table, and firmware...");
                 
                 const fileArray = [
                     { data: bootloaderStr, address: 0x0000 },
@@ -110,10 +112,10 @@
                     { data: firmwareStr, address: 0x10000 }
                 ];
                 
-                await esploader.write_flash({
+                await esploader.writeFlash({
                     fileArray: fileArray,
-                    flash_size: 'keep',
-                    erase_all: false,
+                    flashSize: 'keep',
+                    eraseAll: false,
                     compress: true,
                     reportProgress: (fileIndex, written, total) => {
                         const percent = ((written / total) * 100).toFixed(1);
@@ -129,10 +131,10 @@
                 await new Promise(resolve => setTimeout(resolve, 100));
                 await transport.setDTR(true);
                 log("Done! You can now test your NES emulator.");
-
+                
                 try {
                     const releaseUrl = `https://github.com/${repoOwner}/${repoName}/releases/latest/download/firmware.bin`;
-                    fetch(releaseUrl, { mode: 'no-cors' });  
+                    fetch(releaseUrl, { mode: 'no-cors' });
                 } catch (e) {
                     console.error("Counter ping failed", e);
                 }

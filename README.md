@@ -11,6 +11,10 @@ A high-performance, DIY handheld NES (Nintendo Entertainment System) emulator po
 
 https://derdacavga.github.io/DSN-Nes-Emulator-Universal/
 
+## New Update Video
+
+[![Watch the tutorial](https://img.youtube.com/vi/AtN6PMmwsBo/0.jpg)](https://www.youtube.com/watch?v=AtN6PMmwsBo)
+
 ## 📺 Video Tutorial
 
 Build your own following the step-by-step guide!
